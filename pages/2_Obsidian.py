@@ -33,7 +33,7 @@ div[data-testid="stButton"] > button p {font-family: monospace !important;font-s
 .md-body {background: #161b22;border: 1px solid #30363d;border-radius: 8px;padding: 1.5rem 2rem;color: #c9d1d9;
     line-height: 1.8;}
 
-.empty-msg {color: #8b949e;font-family: monospace;font-size: 0.9rem;padding: 1rem;ext-align: center;}
+.empty-msg {color: #8b949e;font-family: monospace;font-size: 0.9rem;padding: 1rem;text-align: center;}
 </style>
 """)
 
@@ -43,35 +43,55 @@ GITHUB_REPO = 'gong_home'
 BRANCH ='main'
 
 CATEGORIES = {
-    "20_Wiki/21_Languages":      {"label": "21_Languages",       "subs": ["Python", "SQL"]},
-    "20_Wiki/22_Data_Processing":{"label": " Data Processing", "subs": ["Flink", "Kafka", "Pandas", "Spark"]},
-    "20_Wiki/23_Orchestration":  {"label": " Orchestration",   "subs": ["Airflow"]},
-    "20_Wiki/24_Infrastructure": {"label": " Infrastructure",  "subs": ["Docker", "Linux"]},
-    "20_Wiki/25_CS_Basics":      {"label": " CS Basics",       "subs": []},
-    "20_Wiki/26_Visualization":  {"label": " Visualization",   "subs": ["Streamlit", "Superset"]},
+    "20_Wiki/21_Languages":      {"label": "Languages",       "subs": ["Python", "SQL"]},
+    "20_Wiki/22_Data_Processing":{"label": "Data Processing", "subs": ["Flink", "Kafka", "Pandas", "Spark"]},
+    "20_Wiki/23_Orchestration":  {"label": "Orchestration",   "subs": ["Airflow"]},
+    "20_Wiki/24_Infrastructure": {"label": "Infrastructure",  "subs": ["Docker", "Linux"]},
+    "20_Wiki/25_CS_Basics":      {"label": "CS Basics",       "subs": []},
+    "20_Wiki/26_Visualization":  {"label": "Visualization",   "subs": ["Streamlit", "Superset"]},
 }
+
+def get_headers():
+    """GitHub API 헤더 반환 (토큰이 있으면 사용, 없으면 빈 헤더)"""
+    headers = {}
+    try:
+        token = st.secrets.get("GITHUB_TOKEN", "")
+        if token:
+            headers["Authorization"] = f"token {token}"
+    except Exception:
+        pass
+    return headers
 
 @st.cache_data(ttl=300)
 def get_tree(path: str) -> list:
     url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{path}?ref={BRANCH}"
-    headers = {"Authorization": f"token {st.secrets['GITHUB_TOKEN']}"}
-    r = requests.get(url, timeout=10,headers=headers)
-    if r.status_code == 200:
-        return r.json()
-    return []
+    headers = get_headers()
+    try:
+        r = requests.get(url, timeout=10, headers=headers)
+        if r.status_code == 200:
+            data = r.json()
+            # API가 리스트를 반환하는지 확인
+            if isinstance(data, list):
+                return data
+        return []
+    except Exception:
+        return []
 
 @st.cache_data(ttl=300)
-def get_md_content(path:str)->str:
+def get_md_content(path: str) -> str:
     url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{path}?ref={BRANCH}"
-    headers = {"Authorization": f"token {st.secrets['GITHUB_TOKEN']}"}
-    r = requests.get(url, timeout=10,headers=headers)
-    if r.status_code==200:
-        data=r.json()
-        content=base64.b64decode(data['content']).decode("utf-8")
-        return content
-    return ""
+    headers = get_headers()
+    try:
+        r = requests.get(url, timeout=10, headers=headers)
+        if r.status_code == 200:
+            data = r.json()
+            content = base64.b64decode(data['content']).decode("utf-8")
+            return content
+        return ""
+    except Exception:
+        return ""
 
-def clean_obsidian_md(text:str)->str:
+def clean_obsidian_md(text: str) -> str:
     text = re.sub(r'\[\[([^\]|]+)(?:\|([^\]]+))?\]\]', 
                   lambda m: m.group(2) or m.group(1), text)
     text = re.sub(r'```dataview[\s\S]*?```', 
@@ -80,17 +100,18 @@ def clean_obsidian_md(text:str)->str:
     return text
 
 @st.cache_data(ttl=300)
-def collect_md_files(path:str)->list:
-    files=[]
-    items=get_tree(path)
+def collect_md_files(path: str) -> list:
+    files = []
+    items = get_tree(path)
     for item in items:
-        if item['type']=='file' and item['name'].endswith('.md'):
-            files.append({
-                "name":item['name'].replace('.md','').replace('_',' '),
-                "path":item['path']
-            })
-        elif item['type']=='dir':
-            files.extend(collect_md_files(item['path']))
+        if isinstance(item, dict):
+            if item.get('type') == 'file' and item.get('name', '').endswith('.md'):
+                files.append({
+                    "name": item['name'].replace('.md', '').replace('_', ' '),
+                    "path": item['path']
+                })
+            elif item.get('type') == 'dir':
+                files.extend(collect_md_files(item['path']))
     return files
 
 def on_category_change():
@@ -106,7 +127,7 @@ with st.sidebar:
     st.html("<hr class='divider'/>")
     
     st.html('<strong><i class="fa-solid fa-folder"></i> Wiki 카테고리</strong>')
-    selected_wiki_key=st.radio(
+    selected_wiki_key = st.radio(
         label="카테고리",
         options=list(CATEGORIES.keys()),
         format_func=lambda k: CATEGORIES[k]['label'],
@@ -118,7 +139,7 @@ with st.sidebar:
     
     
 # 메인 화면
-wiki_info=CATEGORIES[selected_wiki_key]
+wiki_info = CATEGORIES[selected_wiki_key]
 
 st.html(f"""
     <h1 class='page-title'>
@@ -130,31 +151,30 @@ st.html(f"""
 """)
 st.html("<hr class='divider'/>")
 
-subs=wiki_info["subs"]
+subs = wiki_info["subs"]
 
 if subs:
-    tabs=st.tabs(subs)
-    tab_map=dict(zip(subs,tabs))
+    tabs = st.tabs(subs)
+    tab_map = dict(zip(subs, tabs))
 else:
-    tab_map={"전체":st.container()}
+    tab_map = {"전체": st.container()}
 
 @st.fragment
 def render_file_list(folder_path):
-    files=collect_md_files(folder_path)
+    files = collect_md_files(folder_path)
     if not files:
         st.html("<p class='empty-msg'>아직 노트가 없습니다. Obsidian에서 열심히 공부해주세요😅</p>")
         return
     
-    search=st.text_input("🔍 노트 검색:", placeholder='파일명 검색하고 싶으면 여기에 적어주세요',key=folder_path)
+    search = st.text_input("🔍 노트 검색:", placeholder='파일명 검색하고 싶으면 여기에 적어주세요', key=folder_path)
     if search:
-        files=[f for f in files if search.lower() in f['name'].lower()]
+        files = [f for f in files if search.lower() in f['name'].lower()]
         
     st.caption(f"총 {len(files)}개의 노트가 검색되었습니다.")
     
-    cols=st.columns(3)
-    for i,f in enumerate(files):
-        with cols[i%3]:
-
+    cols = st.columns(3)
+    for i, f in enumerate(files):
+        with cols[i % 3]:
             is_active = st.session_state.get("selected_md") == f["path"]
             
             if st.button(
@@ -163,11 +183,11 @@ def render_file_list(folder_path):
                 type="primary" if is_active else "secondary",
                 use_container_width=True
             ):
-                st.session_state["selected_md"]   = f["path"]
+                st.session_state["selected_md"] = f["path"]
                 st.session_state["selected_name"] = f["name"]
                 st.rerun() 
     
-    if 'selected_md' in st.session_state and st.session_state.get("selected_md","").startswith(folder_path):
+    if 'selected_md' in st.session_state and st.session_state.get("selected_md", "").startswith(folder_path):
         render_markdown_content()
         
 def render_markdown_content():
@@ -175,14 +195,17 @@ def render_markdown_content():
     st.subheader(st.session_state['selected_name']) 
     
     with st.spinner("노트 불러오는 중.."):
-        raw=get_md_content(st.session_state['selected_md'])
-        cleaned=clean_obsidian_md(raw)
-        st.markdown(cleaned)
+        raw = get_md_content(st.session_state['selected_md'])
+        if raw:
+            cleaned = clean_obsidian_md(raw)
+            st.markdown(cleaned)
+        else:
+            st.warning("노트를 불러올 수 없습니다.")
 
 
 if subs:
     for sub_name, tab in tab_map.items():
-        folder=f"{selected_wiki_key}/{sub_name}"
+        folder = f"{selected_wiki_key}/{sub_name}"
         with tab:
             render_file_list(folder)
 else:
