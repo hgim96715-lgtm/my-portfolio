@@ -1,0 +1,216 @@
+.streamlit/cache/   
+.streamlit/secrets.toml 
+
+venv/*
+bin/
+lib/
+# =======================================================
+# 1. [보안 0순위] 절대 공개 금지 (Secrets)
+# =======================================================
+# 환경변수 파일
+.env
+.env.*
+env.py
+
+# 인증서 및 키
+*.pem
+*.key
+*.crt
+id_rsa
+id_rsa.pub
+*.p12
+*.jks
+
+# 주요 서비스 비밀 파일
+secrets.json
+client_secret.json
+credentials.json
+token.json
+key.txt
+config_private.toml
+.streamlit/secrets.toml
+wandb/
+
+# =======================================================
+# 2. [Python] 실행 시 자동 생성되는 쓰레기들
+# =======================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+*.pyc
+.dmypy.json
+dmypy.json
+
+# =======================================================
+# 3. [가상환경] 내 컴퓨터 전용 라이브러리 방
+# =======================================================
+.venv/
+venv/
+env/
+ENV/
+.Python
+bin/
+lib/
+include/
+
+# =======================================================
+# 4. [데이터] Git은 코드가 아닌 데이터를 저장하지 않음
+# =======================================================
+# 주의: 설정 파일(*.json, *.xml)까지 막지 않도록 확장자 주의
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.parquet
+*.avro
+*.db
+*.sqlite3
+*.h5
+*.hdf5
+*.orc
+
+# 데이터 폴더 통째로 막기 (추천)
+data/
+outputs/
+downloads/
+raw_data/
+processed_data/
+checkpoints/
+
+# =======================================================
+# 5. [모델 & 피클] 용량 주범 & 보안 위험 (Model)
+# =======================================================
+*.pickle
+*.pkl
+*.pckl
+*.joblib
+*.pt
+*.pth
+*.model
+*.ckpt
+*.onnx
+*.pb
+*.safetensors
+
+# =======================================================
+# 6. [압축 파일] 바이너리 파일 차단 (Archives)
+# =======================================================
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.gz
+
+# =======================================================
+# 7. [로그] 실행 기록 (Logs)
+# =======================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+celerybeat-schedule
+*.pid
+
+# =======================================================
+# 8. [빌드/배포] 임시 파일 (Builds)
+# =======================================================
+dist/
+build/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# =======================================================
+# 9. [OS/IDE] 운영체제 및 에디터 설정 (System)
+# =======================================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.iml
+.directory
+
+# =======================================================
+# 10. [Java/Spark] 스파크 사용 시 발생 (JVM & Local) 2/2 추가
+# =======================================================
+*.class
+*.jar
+*.war
+target/
+
+# 스파크/하둡 실행 결과물 (성공 플래그, CRC)
+_SUCCESS
+*.crc
+*.trashinfo
+
+# ⚠️ [중요] 로컬 스파크 실행 시 생기는 폴더들 (이거 빠지면 지저분해짐)
+spark-warehouse/
+metastore_db/
+derby.log
+
+
+#  데이터 결과물 폴더 무시
+data/transformed/
+transformed/
+
+# 체크포인트 폴더 무시
+chk/
+checkpoint/
+
+# 스파크 메타데이터 무시
+_spark_metadata/
+
+# 파이썬/주피터 임시 파일 무시
+__pycache__/
+.ipynb_checkpoints/
+
+# =======================================================
+# 11. [Airflow] Airflow 실행 부산물 및 설정 
+# =======================================================
+# 실행 로그
+logs/
+
+# 로컬 DB 및 설정 (보안상 절대 올리면 안 됨)
+airflow.db
+airflow.cfg
+webserver_config.py
+standalone_admin_password.txt
+airflow-webserver.pid
+
+# ⚠️ Docker/개발 환경에 따라 무시할 수도, 올릴 수도 있는 것들
+# (일반적으로 dags, plugins는 코드를 올리고, 빈 폴더는 .gitkeep으로 유지)
+# plugins/
+# config/
+
+# =======================================================
+# ✅ [필수 허용] 예외 규칙 (Whitelist)
+# =======================================================
+# 락 파일은 팀원과 버전 동기화를 위해 "반드시" 올려야 함!
+!uv.lock
+!poetry.lock
+!package-lock.json
+!yarn.lock
+
+# 프로젝트 설정 파일도 필수
+!pyproject.toml
+
+
+# flink 
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# =======================================================
+#  [Streamlit] Streamlit 실행 시 생기는 캐시 및 보안 파일
+# =======================================================
+.streamlit/cache/   
+.streamlit/secrets.toml 
+
+

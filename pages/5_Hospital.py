@@ -19,19 +19,8 @@ st.markdown("""
 # 설정
 # ──────────────────────────────────────────────
 GITHUB_USER  = "hgim96715-lgtm"
-GITHUB_REPO  = "gong_home"
+GITHUB_REPO  = "hospital-realtime-pipeline"
 BRANCH       = "main"
-PROJECT_PATH = "10_Projects/17_Project_Hospital"
-
-STEPS = [
-    {"file": "00_Hospital_Project",         "label": "Overview",        "color": "#00C2FF"},
-    {"file": "01_Hospital_Docker_Setup",     "label": " Docker",         "color": "#A78BFA"},
-    {"file": "02_Hospital_Data_Structure",   "label": " 데이터 설계",     "color": "#34D399"},
-    {"file": "03_Hospital_Producer",         "label": " Producer",       "color": "#F59E0B"},
-    {"file": "04_Hospital_Kafka_Spark",      "label": " Kafka · Spark",  "color": "#F87171"},
-    {"file": "05_Hospital_Superset",         "label": " Superset",       "color": "#60A5FA"},
-    {"file": "06_Hospital_Airflow",          "label": " Airflow",        "color": "#FB923C"},
-]
 
 TECH_STACK = [
     ("Apache Kafka",   "#F59E0B"),
@@ -85,14 +74,12 @@ section[data-testid="stSidebar"] .sub-title { color: #8b949e; font-family: monos
 """)
 
 # ──────────────────────────────────────────────
-# 유틸 함수
+# GitHub API 함수
 # ──────────────────────────────────────────────
 @st.cache_data(ttl=600)
-def get_md(file_name: str) -> str:
-    url = (
-        f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}"
-        f"/contents/{PROJECT_PATH}/{file_name}.md?ref={BRANCH}"
-    )
+def get_readme() -> str:
+    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/docs/README.md?ref={BRANCH}"
+    
     headers = {}
     if "GITHUB_TOKEN" in st.secrets:
         headers["Authorization"] = f"token {st.secrets['GITHUB_TOKEN']}"
@@ -116,10 +103,7 @@ def clean_md(text: str) -> str:
     def replace_image(m):
         filename = re.sub(r'\|.*$', '', m.group(1).strip())
         encoded  = requests.utils.quote(filename)
-        url = (
-            f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}"
-            f"/{BRANCH}/99_Assets(이미지&첨부파일저장소)/{encoded}"
-        )
+        url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{BRANCH}/docs/{encoded}"
         return f"![{filename}]({url})"
     text = re.sub(r'!\[\[([^\]]+)\]\]', replace_image, text)
     text = re.sub(r'\[\[([^\]|]+)(?:\|([^\]]+))?\]\]',
@@ -150,13 +134,6 @@ with st.sidebar:
     st.html("<p class='sub-title'>Data Engineer</p>")
     st.html("<hr class='divider'/>")
     st.markdown("**🚑 응급실 파이프라인**")
-
-    selected_step = st.radio(
-        label="Step",
-        options=[s["file"] for s in STEPS],
-        format_func=lambda f: next(s["label"] for s in STEPS if s["file"] == f),
-        label_visibility="collapsed",
-    )
     st.html("<hr class='divider'/>")
     st.caption("© 2026 Kim Han Gyeong")
 
@@ -189,7 +166,7 @@ st.html(f"""
         {stack_badges}
         <br/><br/>
         <a class='gh-btn'
-           href='https://github.com/{GITHUB_USER}/{GITHUB_REPO}/tree/{BRANCH}/{PROJECT_PATH}'
+           href='https://github.com/{GITHUB_USER}/{GITHUB_REPO}'
            target='_blank'>
             <i class='fa-brands fa-github'></i> GitHub 코드 보기
         </a>
@@ -213,16 +190,12 @@ st.html("""
 st.html("<hr class='divider'/>")
 
 # ──────────────────────────────────────────────
-# 노트 렌더링
+# README 렌더링
 # ──────────────────────────────────────────────
-current = next(s for s in STEPS if s["file"] == selected_step)
-st.html(f"<strong class='page-label'>{current['label']}</strong>")
-
 with st.spinner("노트 불러오는 중.. 🚑"):
-    raw = get_md(selected_step)
+    raw = get_readme()
 
 if raw:
     render_md_with_mermaid(raw)
 else:
     st.warning("🥹 GitHub에서 파일을 불러올 수 없습니다. 경로를 확인하세요.")
-    st.code(f"{PROJECT_PATH}/{selected_step}.md", language="text")
