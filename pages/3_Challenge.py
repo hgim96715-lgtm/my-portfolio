@@ -20,7 +20,7 @@ GITHUB_REPO = "gong_home"
 BRANCH = "main"
 
 CHALLENGES = {
-    "11_Daily_SQL_Challenge":    {"label": " SQL",    "color": "#F29D38", "source": "solvesql",    "source_url": "https://solvesql.com"},
+    "11_Daily_SQL_Challenge":    {"label": " SQL",    "color": "#F29D38", "source": "leetcode",    "source_url": "https://leetcode.com/problemset/database/"},
     "12_Daily_Python_Challenge": {"label": "Python", "color": "#3C8DBC", "source": "programmers", "source_url": "https://school.programmers.co.kr"},
     "13_Daily_Linux_Challenge":  {"label": " Linux",  "color": "#4CAF50", "source": "Linux Journey",  "source_url": "https://linuxjourney.com"},
 }
