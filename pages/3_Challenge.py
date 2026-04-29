@@ -44,7 +44,7 @@ st.html("""
         .cal-header { text-align: center; color: #8b949e; font-size: 0.8rem; padding: 6px 0; }
         .cal-day {text-align: center;vertical-align: top;width: 14.28%;border-radius: 8px;padding: 8px 4px;font-size: 0.82rem;min-height: 48px;color: #8b949e;background: #0d1117;border: 1px solid #21262d;}
         .cal-day.has-entry {color: #e6edf3;border: 1px solid #30363d;cursor: pointer;}
-        .cal-day.today {border: 1px solid #00C2FF !important;color: #00C2FF !important;}
+        .cal-day.today {border: 1px solid var(--challenge-color);color: var(--challenge-color);}
         .cal-dot {display: inline-block;width: 7px; height: 7px;border-radius: 50%;margin: 2px 1px 0;}
         .cal-month-title {font-family: monospace;font-size: 1.1rem;color: #e6edf3;margin-bottom: 0.5rem;}
         .stat-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
@@ -206,11 +206,11 @@ def build_calendar_html(year: int, month: int, dated_files: dict, color: str) ->
             if d == today:
                 classes.append("today")
             class_str = " ".join(classes)
-            
+            style = f"--challenge-color:{color};" if (has_entry or d == today) else ""
             dot = f"<br/><span class='cal-dot' style='background:{color}'></span>" if has_entry else ""
             title_tip = dated_files[d]["title"] if has_entry else ""
             
-            html_parts.append(f"<td class='{class_str}' title='{title_tip}'>{day}{dot}</td>")
+            html_parts.append(f"<td class='{class_str}' style='{style}' title='{title_tip}'>{day}{dot}</td>")
         html_parts.append("</tr>")
     
     html_parts.append("</table>")
